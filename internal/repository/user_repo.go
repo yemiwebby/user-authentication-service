@@ -11,21 +11,22 @@ var users = map[string]*model.User{
 	"gdg@example.com": {
         Email:    "gdg@example.com",
         Password: "hashed-securepassword",
+		Name: "GDG Participant",
     },
 }
 
 
-func SaveUser(user model.User) error {
+func SaveUser(user *model.User) error {
 	if _, exists := users[user.Email]; exists {
 		return errors.New("user already exists")
 	}
-	users[user.Email] = &user
+	users[user.Email] = user
 	return nil
 }
 
 
 
-func FiindUserByEmail(email string) (*model.User, error) {
+func FindUserByEmail(email string) (*model.User, error) {
 	user, exists := users[email]
 	if !exists {
 		return nil, errors.New("user not found")

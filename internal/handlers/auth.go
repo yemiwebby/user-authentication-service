@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -10,7 +12,6 @@ import (
 
 func RegisterAuthRoutes(r *mux.Router) {
 	r.HandleFunc("/registration", RegisterUser).Methods("POST")
-	r.HandleFunc("/login", LoginUser).Methods("POST")
 	r.HandleFunc("/password-reset", ResetPassword).Methods("POST")
 }
 
@@ -27,29 +28,41 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]string{"message":"User registered successfully"})
-}
+	// Send welcome email to the Email Notification Service
+	// go func() {
+	// 	emailReq := map[string]string{
+	// 		"recipient": req.Email,
+	// 		"subject":   "Welcome to Our Platform",
+	// 		"body":      "Thank you for registering!",
+	// 	}
+	// 	jsonData, _ := json.Marshal(emailReq)
+	// 	resp, err := http.Post("http://localhost:8081/send", "application/json", bytes.NewBuffer(jsonData))
+	// 	if err != nil {
+	// 		log.Printf("Failed to send email: %v\n", err)
+	// 		return
+	// 	}
+	// 	defer resp.Body.Close()
+	// 	log.Printf("Email sent with status: %d\n", resp.StatusCode)
+	// }()
 
 
-func LoginUser(w http.ResponseWriter, r *http.Request) {
-	var req service.LoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
-		return
+	emailReq := map[string]string{
+		"recipient": req.Email,
+		"subject":   "Welcome to Our Platform",
+		"body":      "Thank you for registering!",
 	}
-
-	token, err := service.LoginUser(req)
+	jsonData, _ := json.Marshal(emailReq)
+	resp, err := http.Post("http://localhost:8081/send", "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		log.Printf("Failed to send email: %v\n", err)
 		return
 	}
+	defer resp.Body.Close()
+	log.Printf("Email sent with status: %d\n", resp.StatusCode)
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"token": token})
-
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]string{"message": "User registered successfully"})
 }
-
 
 func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	var req service.PasswordResetRequest
@@ -63,6 +76,23 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Send password reset email to the Email Notification Service
+	go func() {
+		emailReq := map[string]string{
+			"recipient": req.Email,
+			"subject":   "Your Password Has Been Reset",
+			"body":      "You have successfully reset your password.",
+		}
+		jsonData, _ := json.Marshal(emailReq)
+		resp, err := http.Post("http://localhost:8081/send", "application/json", bytes.NewBuffer(jsonData))
+		if err != nil {
+			log.Printf("Failed to send email: %v\n", err)
+			return
+		}
+		defer resp.Body.Close()
+		log.Printf("Password reset email sent with status: %d\n", resp.StatusCode)
+	}()
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Password reset successfully"})
