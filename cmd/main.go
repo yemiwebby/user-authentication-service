@@ -5,11 +5,13 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/yemiwebby/user-authentication-service/config"
 	"github.com/yemiwebby/user-authentication-service/internal/handlers"
 )
 
 
 func main() {
+	config.LoadConfig()
 	r := mux.NewRouter()
 	handlers.RegisterAuthRoutes(r)
 

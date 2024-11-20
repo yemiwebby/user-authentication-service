@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/yemiwebby/user-authentication-service/internal/service"
@@ -28,6 +29,11 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	emailServiceURL := os.Getenv("EMAIL_SERVICE_URL") 
+	if emailServiceURL == "" {
+		emailServiceURL = "http://localhost:8081" 
+	}
+
 	// Send welcome email to the Email Notification Service
 	// go func() {
 	// 	emailReq := map[string]string{
@@ -36,7 +42,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	// 		"body":      "Thank you for registering!",
 	// 	}
 	// 	jsonData, _ := json.Marshal(emailReq)
-	// 	resp, err := http.Post("http://localhost:8081/send", "application/json", bytes.NewBuffer(jsonData))
+	// 	resp, err := http.Post(emailServiceURL+"/send", "application/json", bytes.NewBuffer(jsonData))
 	// 	if err != nil {
 	// 		log.Printf("Failed to send email: %v\n", err)
 	// 		return
@@ -52,7 +58,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		"body":      "Thank you for registering!",
 	}
 	jsonData, _ := json.Marshal(emailReq)
-	resp, err := http.Post("http://localhost:8081/send", "application/json", bytes.NewBuffer(jsonData))
+	resp, err := http.Post(emailServiceURL+"/send", "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Printf("Failed to send email: %v\n", err)
 		return
@@ -77,6 +83,11 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	emailServiceURL := os.Getenv("EMAIL_SERVICE_URL") 
+	if emailServiceURL == "" {
+		emailServiceURL = "http://localhost:8081" 
+	}
+
 	// Send password reset email to the Email Notification Service
 	go func() {
 		emailReq := map[string]string{
@@ -85,7 +96,8 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 			"body":      "You have successfully reset your password.",
 		}
 		jsonData, _ := json.Marshal(emailReq)
-		resp, err := http.Post("http://localhost:8081/send", "application/json", bytes.NewBuffer(jsonData))
+		resp, err := http.Post(emailServiceURL+"/send", "application/json", bytes.NewBuffer(jsonData))
+
 		if err != nil {
 			log.Printf("Failed to send email: %v\n", err)
 			return

@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-auth-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user-auth-service
+  template:
+    metadata:
+      labels:
+        app: user-auth-service
+    spec:
+      containers:
+        - name: user-auth-service
+          image: gcr.io/<your-project-id>/user-auth-service:latest
+          env:
+            - name: EMAIL_SERVICE_URL
+              value: "http://email-service"
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-auth-service
+spec:
+  selector:
+    app: user-auth-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer

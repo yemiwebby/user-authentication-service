@@ -1,7 +1,13 @@
 package config
 
-import "log"
+import (
+	"log"
+
+	"github.com/joho/godotenv"
+)
 
 func LoadConfig() {
-	log.Println("Config loaded (mock for now)")
+	if err := godotenv.Load(".env"); err != nil {
+        log.Fatalf("Error loading .env file")
+    }
 }
