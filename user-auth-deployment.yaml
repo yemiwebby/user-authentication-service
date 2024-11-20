@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: user-auth-service
-          image: gcr.io/<your-project-id>/user-auth-service:latest
+          image: gcr.io/gdg-microservices-project/user-auth-service:latest
           env:
             - name: EMAIL_SERVICE_URL
               value: "http://email-service"
